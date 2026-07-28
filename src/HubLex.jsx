@@ -1,11 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import LexChatbot from "./LexChatbot";
-
-// =============================================
-// ⚠️  CONFIGURAÇÃO — ALTERE ANTES DE PUBLICAR
-// =============================================
-const WHATSAPP_NUMBER = "5513991791053";
-// =============================================
+import {
+  WHATSAPP_NUMBER, DOURADO, AREIA, SERIF,
+  OptBtn, PrimaryBtn, BotBubble, UserBubble, TypingRow, ChatShell, colStack,
+} from "./brand";
 
 // ─── Taxas médias do BACEN por modalidade (% ao mês, ref. 2025–2026) ───
 const TAXAS_MEDIAS = {
@@ -33,52 +31,12 @@ const DAMAGE_OPTIONS = [
   { key: "other",      icon: "📋", label: "Outros danos" },
 ];
 
-const fmt = (t) => t.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-
-// ─── Componentes reutilizáveis ───────────────────────────────────
-
-function OptBtn({ onClick, icon, label, sub, selected, small }) {
-  const [hov, setHov] = useState(false);
-  const active = selected || hov;
-  return (
-    <button onClick={onClick}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{
-        padding: small ? "8px 12px" : "11px 14px",
-        border: `2px solid ${active ? "#b79f6f" : "#e8e0d0"}`,
-        borderRadius: "11px",
-        background: active
-          ? "linear-gradient(135deg, rgba(183,159,111,0.10), rgba(183,159,111,0.05))"
-          : "#fff",
-        cursor: "pointer",
-        textAlign: "left",
-        width: "100%",
-        fontFamily: "'Montserrat', sans-serif",
-        transition: "all 0.15s ease",
-        display: "flex", alignItems: "center", gap: "10px",
-      }}
-    >
-      {icon && <span style={{ fontSize: small ? "16px" : "18px", flexShrink: 0 }}>{icon}</span>}
-      <span>
-        <span style={{
-          fontSize: small ? "12px" : "13px", fontWeight: 600,
-          color: active ? "#15253f" : "#333",
-          display: "block",
-        }}>{label}</span>
-        {sub && <span style={{
-          fontSize: "11px", color: "#888",
-          display: "block", marginTop: "2px",
-        }}>{sub}</span>}
-      </span>
-    </button>
-  );
-}
 
 function DamageSelector({ damages, setDamages }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
       {DAMAGE_OPTIONS.map(d => (
-        <OptBtn key={d.key} icon={d.icon} label={d.label} small
+        <OptBtn key={d.key} icon={d.icon} label={d.label}
           selected={damages.includes(d.key)}
           onClick={() => setDamages(prev =>
             prev.includes(d.key) ? prev.filter(x => x !== d.key) : [...prev, d.key]
@@ -95,7 +53,7 @@ function TextInput({ placeholder, value, onChange, multiline }) {
     padding: "10px 14px",
     border: "2px solid #e8e0d0",
     borderRadius: "11px",
-    fontFamily: "'Montserrat', sans-serif",
+    fontFamily: "inherit",
     fontSize: "13px",
     outline: "none",
     transition: "border-color 0.15s",
@@ -105,14 +63,14 @@ function TextInput({ placeholder, value, onChange, multiline }) {
   if (multiline) return (
     <textarea rows={4} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)}
       style={shared}
-      onFocus={e => e.target.style.borderColor = "#b79f6f"}
+      onFocus={e => e.target.style.borderColor = DOURADO}
       onBlur={e => e.target.style.borderColor = "#e8e0d0"}
     />
   );
   return (
     <input type="text" placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)}
       style={shared}
-      onFocus={e => e.target.style.borderColor = "#b79f6f"}
+      onFocus={e => e.target.style.borderColor = DOURADO}
       onBlur={e => e.target.style.borderColor = "#e8e0d0"}
     />
   );
@@ -127,10 +85,10 @@ function NumberInput({ placeholder, value, onChange, prefix }) {
         style={{
           flex: 1, padding: "10px 14px",
           border: "2px solid #e8e0d0", borderRadius: "11px",
-          fontFamily: "'Montserrat', sans-serif", fontSize: "13px",
+          fontFamily: "inherit", fontSize: "13px",
           outline: "none", background: "#fff", color: "#333",
         }}
-        onFocus={e => e.target.style.borderColor = "#b79f6f"}
+        onFocus={e => e.target.style.borderColor = DOURADO}
         onBlur={e => e.target.style.borderColor = "#e8e0d0"}
       />
     </div>
@@ -262,65 +220,6 @@ export default function HubLex() {
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${buildWAMessage()}`, "_blank");
   };
 
-  // ─── Render helpers ───
-  const renderMessages = () => messages.map(m => (
-    <div key={m.id} style={{
-      display: "flex",
-      justifyContent: m.role === "user" ? "flex-end" : "flex-start",
-      marginBottom: "8px",
-    }}>
-      {m.role === "bot" && (
-        <div style={{
-          width: 30, height: 30, borderRadius: "50%",
-          background: "linear-gradient(135deg, #15253f, #1e3a5f)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: "14px", marginRight: "8px", flexShrink: 0, marginTop: "2px",
-          color: "#f3e0a8", fontWeight: 700,
-        }}>L</div>
-      )}
-      <div style={{
-        maxWidth: "82%",
-        padding: "10px 14px",
-        borderRadius: m.role === "user"
-          ? "14px 14px 4px 14px"
-          : "14px 14px 14px 4px",
-        background: m.role === "user"
-          ? "linear-gradient(135deg, #15253f, #1e3a5f)"
-          : "#f5f0e6",
-        color: m.role === "user" ? "#f3e0a8" : "#333",
-        fontSize: "13px",
-        lineHeight: "1.5",
-        fontFamily: "'Montserrat', sans-serif",
-      }}>
-        <span dangerouslySetInnerHTML={{ __html: fmt(m.text) }} />
-      </div>
-    </div>
-  ));
-
-  const renderGuide = (title, items) => (
-    <div style={{
-      background: "#f9f6ef", border: "1px solid #e8e0d0",
-      borderRadius: "14px", padding: "14px 16px", margin: "8px 0",
-    }}>
-      <div style={{ fontWeight: 700, fontSize: "13px", color: "#15253f", marginBottom: "10px" }}>
-        {title}
-      </div>
-      {items.map((item, i) => (
-        <div key={i} style={{
-          display: "flex", gap: "8px", marginBottom: "8px",
-          fontSize: "12px", color: "#555", lineHeight: "1.5",
-        }}>
-          <span style={{
-            background: "#15253f", color: "#f3e0a8",
-            width: 20, height: 20, borderRadius: "50%",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "10px", fontWeight: 700, flexShrink: 0, marginTop: "1px",
-          }}>{i + 1}</span>
-          <span dangerouslySetInnerHTML={{ __html: fmt(item) }} />
-        </div>
-      ))}
-    </div>
-  );
 
   // ═══════════════════════════════════════
   // RENDER UI SECTIONS
@@ -331,7 +230,7 @@ export default function HubLex() {
 
     // ─── HUB START ───
     if (showUI === "hub-start") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         <OptBtn icon="🚨" label="Caí em um golpe"
           sub="PIX, falsa central, falso advogado, compra fraudulenta"
           onClick={() => {
@@ -379,7 +278,7 @@ export default function HubLex() {
     // ═══════════════════════════════════════
 
     if (showUI === "golpe-tipo") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "pix",        icon: "💸", label: "Golpe do PIX / transferência" },
           { key: "central",    icon: "📞", label: "Falsa central telefônica / banco" },
@@ -389,7 +288,7 @@ export default function HubLex() {
           { key: "emprestimo", icon: "🏦", label: "Empréstimo / consignado não autorizado" },
           { key: "outro",      icon: "❓", label: "Outro golpe" },
         ].map(o => (
-          <OptBtn key={o.key} icon={o.icon} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} icon={o.icon} label={o.label} onClick={() => {
             setGolpeTipo(o.key);
             addUser(o.label);
             addJ("Tipo de golpe", o.label);
@@ -400,7 +299,7 @@ export default function HubLex() {
     );
 
     if (showUI === "golpe-valor") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "ate1k",    label: "Até R$ 1.000" },
           { key: "1k5k",    label: "R$ 1.000 a R$ 5.000" },
@@ -408,7 +307,7 @@ export default function HubLex() {
           { key: "acima20k", label: "Acima de R$ 20.000" },
           { key: "naosei",  label: "Não sei / prefiro não dizer" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setGolpeValor(o.key);
             addUser(o.label);
             addJ("Valor do prejuízo", o.label);
@@ -419,14 +318,14 @@ export default function HubLex() {
     );
 
     if (showUI === "golpe-quando") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "hoje",    label: "Hoje ou ontem" },
           { key: "semana",  label: "Nesta semana" },
           { key: "mes",     label: "Neste mês" },
           { key: "mais30",  label: "Há mais de 30 dias" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setGolpeQuando(o.key);
             addUser(o.label);
             addJ("Quando aconteceu", o.label);
@@ -452,14 +351,14 @@ export default function HubLex() {
     );
 
     if (showUI === "golpe-providencias") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "bo",         label: "Registrei B.O." },
           { key: "banco",      label: "Contatei o banco" },
           { key: "reclamacao", label: "Abri reclamação (BACEN / consumidor.gov)" },
           { key: "nada",       label: "Nada ainda" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small
+          <OptBtn key={o.key} label={o.label}
             selected={golpeProvidencias.includes(o.key)}
             onClick={() => {
               setGolpeProvidencias(prev =>
@@ -468,7 +367,7 @@ export default function HubLex() {
             }}
           />
         ))}
-        <button onClick={() => {
+        <PrimaryBtn onClick={() => {
           const labels = golpeProvidencias.length > 0
             ? golpeProvidencias.map(k => {
                 const map = { bo: "B.O.", banco: "Contatou banco", reclamacao: "Reclamação formal", nada: "Nada ainda" };
@@ -486,26 +385,19 @@ export default function HubLex() {
           } else {
             botDelay("**O banco devolveu ou estornou algum valor?**", 1000, () => setShowUI("golpe-devolveu"));
           }
-        }}
-          style={{
-            padding: "10px", background: "#15253f", color: "#f3e0a8",
-            border: "none", borderRadius: "10px", cursor: "pointer",
-            fontSize: "13px", fontWeight: 700, fontFamily: "'Montserrat', sans-serif",
-            marginTop: "4px",
-          }}
-        >Confirmar →</button>
+        }} label="Confirmar →" />
       </div>
     );
 
     if (showUI === "golpe-devolveu") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "sim_tudo",   label: "Sim, devolveu tudo" },
           { key: "parcial",    label: "Devolveu parcialmente" },
           { key: "nao",        label: "Não, se recusou" },
           { key: "sem_resp",   label: "Ainda não respondeu" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setGolpeBancoDevolveu(o.key);
             addUser(o.label);
             addJ("Banco devolveu", o.label);
@@ -516,13 +408,13 @@ export default function HubLex() {
     );
 
     if (showUI === "golpe-provas") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "sim",     label: "Sim, tenho tudo salvo" },
           { key: "alguns",  label: "Tenho alguns" },
           { key: "nao",     label: "Não tenho nada" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setGolpeProvas(o.key);
             addUser(o.label);
             addJ("Provas disponíveis", o.label);
@@ -549,9 +441,9 @@ export default function HubLex() {
     // ═══════════════════════════════════════
 
     if (showUI === "juros-tipo") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {Object.entries(TAXAS_MEDIAS).map(([k, v]) => (
-          <OptBtn key={k} label={v.label} small onClick={() => {
+          <OptBtn key={k} label={v.label} onClick={() => {
             setJurosTipo(k);
             addUser(v.label);
             addJ("Tipo de dívida", v.label);
@@ -562,18 +454,18 @@ export default function HubLex() {
     );
 
     if (showUI === "juros-valor-total") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        <OptBtn label="Acima de R$ 20.000" small onClick={() => {
+      <div style={colStack}>
+        <OptBtn label="Acima de R$ 20.000" onClick={() => {
           addUser("Acima de R$ 20.000");
           addJ("Valor total da dívida", "Acima de R$ 20.000");
           botDelay("**Você sabe qual é a taxa de juros que está pagando?**", 1000, () => setShowUI("juros-sabe-taxa"));
         }} />
-        <OptBtn label="Entre R$ 5.000 e R$ 20.000" small onClick={() => {
+        <OptBtn label="Entre R$ 5.000 e R$ 20.000" onClick={() => {
           addUser("Entre R$ 5.000 e R$ 20.000");
           addJ("Valor total da dívida", "R$ 5.000 a R$ 20.000");
           botDelay("**Você sabe qual é a taxa de juros que está pagando?**", 1000, () => setShowUI("juros-sabe-taxa"));
         }} />
-        <OptBtn label="Abaixo de R$ 5.000" small onClick={() => {
+        <OptBtn label="Abaixo de R$ 5.000" onClick={() => {
           addUser("Abaixo de R$ 5.000");
           addJ("Valor total da dívida", "Abaixo de R$ 5.000");
           botDelay("**Você sabe qual é a taxa de juros que está pagando?**", 1000, () => setShowUI("juros-sabe-taxa"));
@@ -582,13 +474,13 @@ export default function HubLex() {
     );
 
     if (showUI === "juros-sabe-taxa") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        <OptBtn label="Sim, sei a taxa" small onClick={() => {
+      <div style={colStack}>
+        <OptBtn label="Sim, sei a taxa" onClick={() => {
           setJurosSabeTaxa("sim");
           addUser("Sim, sei a taxa");
           botDelay("**Qual é a taxa de juros mensal que você está pagando?** (% ao mês)", 1000, () => setShowUI("juros-taxa-input"));
         }} />
-        <OptBtn label="Não sei, mas tenho o contrato" small onClick={() => {
+        <OptBtn label="Não sei, mas tenho o contrato" onClick={() => {
           setJurosSabeTaxa("contrato");
           addUser("Não sei, mas tenho o contrato");
           addJ("Sabe a taxa", "Não, mas tem contrato");
@@ -596,7 +488,7 @@ export default function HubLex() {
             () => botDelay("Vamos continuar com as outras informações. **Qual o valor da parcela?**", 1000, () => setShowUI("juros-parcela"))
           );
         }} />
-        <OptBtn label="Não sei e não tenho contrato" small onClick={() => {
+        <OptBtn label="Não sei e não tenho contrato" onClick={() => {
           setJurosSabeTaxa("nao");
           addUser("Não sei e não tenho contrato");
           addJ("Sabe a taxa", "Não sabe e não tem contrato");
@@ -610,7 +502,7 @@ export default function HubLex() {
     if (showUI === "juros-taxa-input") return (
       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <NumberInput placeholder="Ex: 8.5" value={jurosTaxa} onChange={setJurosTaxa} prefix="% a.m." />
-        <button onClick={() => {
+        <PrimaryBtn onClick={() => {
           if (!jurosTaxa) return;
           const taxa = parseFloat(jurosTaxa);
           addUser(`${taxa}% ao mês`);
@@ -638,13 +530,7 @@ export default function HubLex() {
               botDelay("**Qual o valor da parcela?**", 1000, () => setShowUI("juros-parcela"));
             });
           }
-        }}
-          style={{
-            padding: "10px", background: "#15253f", color: "#f3e0a8",
-            border: "none", borderRadius: "10px", cursor: "pointer",
-            fontSize: "13px", fontWeight: 700, fontFamily: "'Montserrat', sans-serif",
-          }}
-        >Analisar →</button>
+        }} label="Analisar →" />
       </div>
     );
 
@@ -652,26 +538,20 @@ export default function HubLex() {
       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <NumberInput placeholder="Valor da parcela" value={jurosParcela} onChange={setJurosParcela} prefix="R$" />
         <NumberInput placeholder="Parcelas restantes" value={jurosRestantes} onChange={setJurosRestantes} />
-        <button onClick={() => {
+        <PrimaryBtn onClick={() => {
           if (!jurosParcela) return;
           addUser(`Parcela: R$ ${jurosParcela} | Restantes: ${jurosRestantes || "não informado"}`);
           addJ("Parcela", `R$ ${jurosParcela}`);
           if (jurosRestantes) addJ("Parcelas restantes", jurosRestantes);
           botDelay("**Qual banco ou financeira?**", 1000, () => setShowUI("juros-banco"));
-        }}
-          style={{
-            padding: "10px", background: "#15253f", color: "#f3e0a8",
-            border: "none", borderRadius: "10px", cursor: "pointer",
-            fontSize: "13px", fontWeight: 700, fontFamily: "'Montserrat', sans-serif",
-          }}
-        >Continuar →</button>
+        }} label="Continuar →" />
       </div>
     );
 
     if (showUI === "juros-banco") return (
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
         {BANCOS.map(b => (
-          <OptBtn key={b} label={b} small onClick={() => {
+          <OptBtn key={b} label={b} onClick={() => {
             setJurosBanco(b);
             addUser(b);
             addJ("Banco / Financeira", b);
@@ -682,8 +562,8 @@ export default function HubLex() {
     );
 
     if (showUI === "juros-negativado") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        <OptBtn label="Sim, estou negativado" small onClick={() => {
+      <div style={colStack}>
+        <OptBtn label="Sim, estou negativado" onClick={() => {
           setJurosNegativado("sim");
           addUser("Sim, estou negativado");
           addJ("Negativado", "Sim");
@@ -693,13 +573,13 @@ export default function HubLex() {
             )
           );
         }} />
-        <OptBtn label="Não" small onClick={() => {
+        <OptBtn label="Não" onClick={() => {
           setJurosNegativado("nao");
           addUser("Não");
           addJ("Negativado", "Não");
           botDelay("**Qual é o seu nome?**", 800, () => setShowUI("coleta-nome"));
         }} />
-        <OptBtn label="Não sei" small onClick={() => {
+        <OptBtn label="Não sei" onClick={() => {
           setJurosNegativado("naosei");
           addUser("Não sei");
           addJ("Negativado", "Não sabe");
@@ -715,7 +595,7 @@ export default function HubLex() {
     // ═══════════════════════════════════════
 
     if (showUI === "outros-tipo") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "negativacao", icon: "📉", label: "Nome negativado indevidamente (SPC/Serasa)" },
           { key: "consignado",  icon: "🏦", label: "Empréstimo/consignado no meu nome sem autorização" },
@@ -724,7 +604,7 @@ export default function HubLex() {
           { key: "difamacao",   icon: "🗣️", label: "Difamação / uso indevido do meu nome online" },
           { key: "generico",    icon: "📝", label: "Outro problema" },
         ].map(o => (
-          <OptBtn key={o.key} icon={o.icon} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} icon={o.icon} label={o.label} onClick={() => {
             setOutrosTipo(o.key);
             addUser(o.label);
             addJ("Tipo de problema", o.label);
@@ -749,13 +629,13 @@ export default function HubLex() {
 
     // ── Negativação ──
     if (showUI === "neg-reconhece") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "nao",   label: "Não reconheço essa dívida" },
           { key: "sim",   label: "Sim, reconheço" },
           { key: "parcial", label: "Reconheço parcialmente" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setNegReconhece(o.key);
             addUser(o.label);
             addJ("Reconhece a dívida", o.label);
@@ -766,14 +646,14 @@ export default function HubLex() {
     );
 
     if (showUI === "neg-tempo") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "30d",    label: "Menos de 30 dias" },
           { key: "1_6m",   label: "1 a 6 meses" },
           { key: "6m_5a",  label: "6 meses a 5 anos" },
           { key: "mais5a", label: "Mais de 5 anos" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setNegTempo(o.key);
             addUser(o.label);
             addJ("Tempo negativado", o.label);
@@ -791,21 +671,21 @@ export default function HubLex() {
     );
 
     if (showUI === "neg-prejuizo") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "credito",         label: "Crédito negado" },
           { key: "financiamento",   label: "Financiamento negado" },
           { key: "constrangimento", label: "Constrangimento" },
           { key: "nenhum",          label: "Nenhum prejuízo concreto" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small
+          <OptBtn key={o.key} label={o.label}
             selected={negPrejuizo.includes(o.key)}
             onClick={() => setNegPrejuizo(prev =>
               prev.includes(o.key) ? prev.filter(x => x !== o.key) : [...prev, o.key]
             )}
           />
         ))}
-        <button onClick={() => {
+        <PrimaryBtn onClick={() => {
           const txt = negPrejuizo.length > 0
             ? negPrejuizo.map(k => ({ credito: "Crédito negado", financiamento: "Financiamento negado", constrangimento: "Constrangimento", nenhum: "Nenhum" }[k])).join(", ")
             : "Não informado";
@@ -819,24 +699,18 @@ export default function HubLex() {
           } else {
             botDelay("**Qual é o seu nome?**", 800, () => setShowUI("coleta-nome"));
           }
-        }}
-          style={{
-            padding: "10px", background: "#15253f", color: "#f3e0a8",
-            border: "none", borderRadius: "10px", cursor: "pointer",
-            fontSize: "13px", fontWeight: 700, fontFamily: "'Montserrat', sans-serif",
-          }}
-        >Confirmar →</button>
+        }} label="Confirmar →" />
       </div>
     );
 
     // ── Consignado ──
     if (showUI === "cons-aposentado") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "sim", label: "Sim" },
           { key: "nao", label: "Não" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setConsAposentado(o.key);
             addUser(o.label);
             addJ("Aposentado/pensionista/servidor", o.label);
@@ -847,20 +721,20 @@ export default function HubLex() {
     );
 
     if (showUI === "cons-desconto") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        <OptBtn label="Sim, apareceu um desconto" small onClick={() => {
+      <div style={colStack}>
+        <OptBtn label="Sim, apareceu um desconto" onClick={() => {
           setConsDesconto("sim");
           addUser("Sim, apareceu desconto não autorizado");
           addJ("Desconto não autorizado", "Sim");
           botDelay("**Qual banco fez o empréstimo?**", 1000, () => setShowUI("cons-banco"));
         }} />
-        <OptBtn label="Não, mas recebi dinheiro que não pedi" small onClick={() => {
+        <OptBtn label="Não, mas recebi dinheiro que não pedi" onClick={() => {
           setConsDesconto("dinheiro");
           addUser("Recebi dinheiro que não pedi");
           addJ("Desconto não autorizado", "Recebeu dinheiro não solicitado");
           botDelay("**Qual banco fez o empréstimo?**", 1000, () => setShowUI("cons-banco"));
         }} />
-        <OptBtn label="Não" small onClick={() => {
+        <OptBtn label="Não" onClick={() => {
           setConsDesconto("nao");
           addUser("Não");
           addJ("Desconto não autorizado", "Não");
@@ -872,7 +746,7 @@ export default function HubLex() {
     if (showUI === "cons-banco") return (
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
         {BANCOS.map(b => (
-          <OptBtn key={b} label={b} small onClick={() => {
+          <OptBtn key={b} label={b} onClick={() => {
             setConsBanco(b);
             addUser(b);
             addJ("Banco do consignado", b);
@@ -885,28 +759,22 @@ export default function HubLex() {
     if (showUI === "cons-valor") return (
       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <NumberInput placeholder="Valor do desconto mensal" value={consValor} onChange={setConsValor} prefix="R$" />
-        <button onClick={() => {
+        <PrimaryBtn onClick={() => {
           if (!consValor) return;
           addUser(`R$ ${consValor}/mês`);
           addJ("Desconto mensal", `R$ ${consValor}`);
           botDelay("**Já reclamou no banco ou no INSS?**", 1000, () => setShowUI("cons-reclamou"));
-        }}
-          style={{
-            padding: "10px", background: "#15253f", color: "#f3e0a8",
-            border: "none", borderRadius: "10px", cursor: "pointer",
-            fontSize: "13px", fontWeight: 700, fontFamily: "'Montserrat', sans-serif",
-          }}
-        >Continuar →</button>
+        }} label="Continuar →" />
       </div>
     );
 
     if (showUI === "cons-reclamou") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "sim",  label: "Sim, sem sucesso" },
           { key: "nao",  label: "Não" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setConsReclamou(o.key);
             addUser(o.label);
             addJ("Já reclamou", o.label);
@@ -927,7 +795,7 @@ export default function HubLex() {
     if (showUI === "bloq-banco") return (
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
         {BANCOS.map(b => (
-          <OptBtn key={b} label={b} small onClick={() => {
+          <OptBtn key={b} label={b} onClick={() => {
             setBloqBanco(b);
             addUser(b);
             addJ("Banco", b);
@@ -938,12 +806,12 @@ export default function HubLex() {
     );
 
     if (showUI === "bloq-justificativa") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "sim", label: "Sim, recebi justificativa" },
           { key: "nao", label: "Não, nenhuma explicação" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setBloqJustificativa(o.key);
             addUser(o.label);
             addJ("Recebeu justificativa", o.label);
@@ -954,14 +822,14 @@ export default function HubLex() {
     );
 
     if (showUI === "bloq-saldo") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        <OptBtn label="Sim, tenho saldo retido" small onClick={() => {
+      <div style={colStack}>
+        <OptBtn label="Sim, tenho saldo retido" onClick={() => {
           setBloqSaldo("sim");
           addUser("Sim, tenho saldo retido");
           addJ("Saldo retido", "Sim");
           botDelay("**A conta é usada para receber salário ou benefícios?**", 1000, () => setShowUI("bloq-salario"));
         }} />
-        <OptBtn label="Não" small onClick={() => {
+        <OptBtn label="Não" onClick={() => {
           setBloqSaldo("nao");
           addUser("Não");
           addJ("Saldo retido", "Não");
@@ -971,12 +839,12 @@ export default function HubLex() {
     );
 
     if (showUI === "bloq-salario") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "sim", label: "Sim, recebo salário/benefício nessa conta" },
           { key: "nao", label: "Não" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setBloqSalario(o.key);
             addUser(o.label);
             addJ("Conta-salário", o.label);
@@ -995,7 +863,7 @@ export default function HubLex() {
 
     // ── LGPD ──
     if (showUI === "lgpd-dados") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "cpf",      label: "CPF" },
           { key: "email",    label: "E-mail" },
@@ -1004,37 +872,31 @@ export default function HubLex() {
           { key: "fotos",    label: "Fotos / imagens pessoais" },
           { key: "outros",   label: "Outros dados" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small
+          <OptBtn key={o.key} label={o.label}
             selected={lgpdDados.includes(o.key)}
             onClick={() => setLgpdDados(prev =>
               prev.includes(o.key) ? prev.filter(x => x !== o.key) : [...prev, o.key]
             )}
           />
         ))}
-        <button onClick={() => {
+        <PrimaryBtn onClick={() => {
           const txt = lgpdDados.join(", ") || "Não informado";
           addUser(txt);
           addJ("Dados vazados", txt);
           botDelay("**Sabe qual empresa vazou seus dados?**", 1000, () => setShowUI("lgpd-empresa"));
-        }}
-          style={{
-            padding: "10px", background: "#15253f", color: "#f3e0a8",
-            border: "none", borderRadius: "10px", cursor: "pointer",
-            fontSize: "13px", fontWeight: 700, fontFamily: "'Montserrat', sans-serif",
-          }}
-        >Confirmar →</button>
+        }} label="Confirmar →" />
       </div>
     );
 
     if (showUI === "lgpd-empresa") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        <OptBtn label="Sim, sei qual empresa" small onClick={() => {
+      <div style={colStack}>
+        <OptBtn label="Sim, sei qual empresa" onClick={() => {
           setLgpdEmpresa("sim");
           addUser("Sim, sei qual empresa");
           addJ("Empresa identificada", "Sim");
           botDelay("**Sofreu algum prejuízo após o vazamento?**", 1000, () => setShowUI("lgpd-prejuizo"));
         }} />
-        <OptBtn label="Não sei" small onClick={() => {
+        <OptBtn label="Não sei" onClick={() => {
           setLgpdEmpresa("nao");
           addUser("Não sei qual empresa");
           addJ("Empresa identificada", "Não");
@@ -1044,7 +906,7 @@ export default function HubLex() {
     );
 
     if (showUI === "lgpd-prejuizo") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "golpe",       label: "Fui vítima de golpe após o vazamento" },
           { key: "spam",        label: "Recebo spam / ligações indesejadas" },
@@ -1052,14 +914,14 @@ export default function HubLex() {
           { key: "exposicao",   label: "Dados/fotos foram expostos publicamente" },
           { key: "nenhum",      label: "Nenhum prejuízo concreto" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small
+          <OptBtn key={o.key} label={o.label}
             selected={lgpdPrejuizo.includes(o.key)}
             onClick={() => setLgpdPrejuizo(prev =>
               prev.includes(o.key) ? prev.filter(x => x !== o.key) : [...prev, o.key]
             )}
           />
         ))}
-        <button onClick={() => {
+        <PrimaryBtn onClick={() => {
           const txt = lgpdPrejuizo.join(", ") || "Nenhum";
           addUser(txt);
           addJ("Prejuízo pós-vazamento", txt);
@@ -1071,19 +933,13 @@ export default function HubLex() {
           } else {
             botDelay("**Qual é o seu nome?**", 800, () => setShowUI("coleta-nome"));
           }
-        }}
-          style={{
-            padding: "10px", background: "#15253f", color: "#f3e0a8",
-            border: "none", borderRadius: "10px", cursor: "pointer",
-            fontSize: "13px", fontWeight: 700, fontFamily: "'Montserrat', sans-serif",
-          }}
-        >Confirmar →</button>
+        }} label="Confirmar →" />
       </div>
     );
 
     // ── Difamação ──
     if (showUI === "dif-onde") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "instagram",  label: "Instagram" },
           { key: "facebook",   label: "Facebook" },
@@ -1092,7 +948,7 @@ export default function HubLex() {
           { key: "whatsapp",   label: "WhatsApp / grupos" },
           { key: "outro",      label: "Outro" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setDifOnde(o.key);
             addUser(o.label);
             addJ("Plataforma (difamação)", o.label);
@@ -1103,12 +959,12 @@ export default function HubLex() {
     );
 
     if (showUI === "dif-conhece") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "sim", label: "Sim, conheço" },
           { key: "nao", label: "Não sei quem é" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setDifConhece(o.key);
             addUser(o.label);
             addJ("Conhece o autor", o.label);
@@ -1119,8 +975,8 @@ export default function HubLex() {
     );
 
     if (showUI === "dif-intimo") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        <OptBtn label="Sim" small onClick={() => {
+      <div style={colStack}>
+        <OptBtn label="Sim" onClick={() => {
           setDifIntimo("sim");
           addUser("Sim, conteúdo íntimo sem consentimento");
           addJ("Conteúdo íntimo", "Sim");
@@ -1128,7 +984,7 @@ export default function HubLex() {
             () => botDelay("**Tem prints ou provas salvas?**", 1000, () => setShowUI("dif-provas"))
           );
         }} />
-        <OptBtn label="Não" small onClick={() => {
+        <OptBtn label="Não" onClick={() => {
           setDifIntimo("nao");
           addUser("Não");
           addJ("Conteúdo íntimo", "Não");
@@ -1138,12 +994,12 @@ export default function HubLex() {
     );
 
     if (showUI === "dif-denunciou") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "sim", label: "Sim, sem resultado" },
           { key: "nao", label: "Não" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setDifDenunciou(o.key);
             addUser(o.label);
             addJ("Denunciou na plataforma", o.label);
@@ -1154,12 +1010,12 @@ export default function HubLex() {
     );
 
     if (showUI === "dif-provas") return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={colStack}>
         {[
           { key: "sim",  label: "Sim, tenho prints" },
           { key: "nao",  label: "Não tenho provas" },
         ].map(o => (
-          <OptBtn key={o.key} label={o.label} small onClick={() => {
+          <OptBtn key={o.key} label={o.label} onClick={() => {
             setDifProvas(o.key);
             addUser(o.label);
             addJ("Provas (difamação)", o.label);
@@ -1183,18 +1039,12 @@ export default function HubLex() {
     if (showUI === "coleta-nome") return (
       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <TextInput placeholder="Seu nome completo" value={nome} onChange={setNome} />
-        <button onClick={() => {
+        <PrimaryBtn onClick={() => {
           if (!nome.trim()) return;
           addUser(nome);
           addJ("Nome", nome);
           botDelay("Agora me conte, em poucas palavras, **o que aconteceu:**", 800, () => setShowUI("coleta-relato"));
-        }}
-          style={{
-            padding: "10px", background: "#15253f", color: "#f3e0a8",
-            border: "none", borderRadius: "10px", cursor: "pointer",
-            fontSize: "13px", fontWeight: 700, fontFamily: "'Montserrat', sans-serif",
-          }}
-        >Continuar →</button>
+        }} label="Continuar →" />
       </div>
     );
 
@@ -1205,24 +1055,18 @@ export default function HubLex() {
           vertical === "juros" ? "Descreva sua situação com o banco, dificuldades que está enfrentando..." :
           "Descreva brevemente o que aconteceu..."
         } value={relato} onChange={setRelato} multiline />
-        <button onClick={() => {
+        <PrimaryBtn onClick={() => {
           if (!relato.trim()) return;
           addUser(relato);
           botDelay("**Quais danos você sofreu?** (selecione todos que se aplicam)", 800, () => setShowUI("coleta-danos"));
-        }}
-          style={{
-            padding: "10px", background: "#15253f", color: "#f3e0a8",
-            border: "none", borderRadius: "10px", cursor: "pointer",
-            fontSize: "13px", fontWeight: 700, fontFamily: "'Montserrat', sans-serif",
-          }}
-        >Continuar →</button>
+        }} label="Continuar →" />
       </div>
     );
 
     if (showUI === "coleta-danos") return (
       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <DamageSelector damages={damages} setDamages={setDamages} />
-        <button onClick={() => {
+        <PrimaryBtn onClick={() => {
           const labels = damages.map(d => DAMAGE_OPTIONS.find(o => o.key === d)?.label).filter(Boolean).join(", ") || "Não informado";
           addUser(labels);
 
@@ -1230,43 +1074,20 @@ export default function HubLex() {
             addBot("Um advogado especializado vai revisar seu caso e entrar em contato com orientações específicas.");
             botDelay("Clique abaixo para enviar tudo pelo WhatsApp:", 1000, () => setShowUI("whatsapp-final"));
           });
-        }}
-          style={{
-            padding: "10px", background: "#15253f", color: "#f3e0a8",
-            border: "none", borderRadius: "10px", cursor: "pointer",
-            fontSize: "13px", fontWeight: 700, fontFamily: "'Montserrat', sans-serif",
-          }}
-        >Finalizar análise →</button>
+        }} label="Finalizar análise →" />
       </div>
     );
 
     if (showUI === "whatsapp-final") return (
-      <div style={{
-        background: "linear-gradient(135deg, #15253f, #1e3a5f)",
-        borderRadius: "14px", padding: "18px", textAlign: "center",
-      }}>
-        <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", marginBottom: "12px" }}>
-          As informações que você compartilhou serão enviadas automaticamente para agilizar o atendimento.
-        </div>
+      <div style={{ marginTop: "4px", padding: "18px", background: "linear-gradient(135deg, #0f1e34, #15253f)", borderRadius: "14px", boxShadow: "0 4px 20px rgba(21,37,63,0.2)" }}>
+        <div style={{ fontFamily: SERIF, fontSize: "14.5px", fontWeight: "700", color: AREIA, marginBottom: "8px" }}>Fale com um advogado especialista</div>
+        <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.65)", lineHeight: "1.55", marginBottom: "14px" }}>Seu caso será analisado com prioridade. Todas as informações que você compartilhou serão enviadas automaticamente para agilizar o atendimento.</div>
         <button onClick={openWhatsApp}
-          style={{
-            width: "100%", padding: "13px",
-            background: "linear-gradient(135deg, #20b954, #25D366)",
-            border: "none", borderRadius: "11px", cursor: "pointer",
-            fontSize: "14px", color: "#fff", fontFamily: "'Montserrat', sans-serif",
-            fontWeight: 700, display: "flex", alignItems: "center",
-            justifyContent: "center", gap: "9px",
-            boxShadow: "0 4px 16px rgba(37,211,102,0.35)",
-          }}
+          style={{ width: "100%", padding: "13px", background: "linear-gradient(135deg, #20b954, #25D366)", border: "none", borderRadius: "11px", cursor: "pointer", fontSize: "14px", color: "#fff", fontFamily: "inherit", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", gap: "9px", boxShadow: "0 4px 16px rgba(37,211,102,0.35)" }}
           onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
           onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-        >
-          <span style={{ fontSize: "17px" }}>💬</span>
-          Falar pelo WhatsApp agora
-        </button>
-        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)", textAlign: "center", marginTop: "10px" }}>
-          Atendimento em horário comercial · Resposta em até 2h úteis
-        </div>
+        ><span style={{ fontSize: "17px" }}>💬</span>Falar pelo WhatsApp agora</button>
+        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)", textAlign: "center", marginTop: "10px" }}>Atendimento em horário comercial · Resposta em até 2h úteis</div>
       </div>
     );
 
@@ -1281,96 +1102,16 @@ export default function HubLex() {
   if (vertical === "conta") return <LexChatbot />;
 
   return (
-    <div style={{
-      maxWidth: "420px", margin: "0 auto", height: "100vh",
-      display: "flex", flexDirection: "column",
-      fontFamily: "'Montserrat', sans-serif",
-      background: "#faf8f4",
-    }}>
-      {/* Header */}
-      <div style={{
-        padding: "14px 16px",
-        background: "linear-gradient(135deg, #15253f, #1e3a5f)",
-        display: "flex", alignItems: "center", gap: "12px",
-      }}>
-        <div style={{
-          width: 40, height: 40, borderRadius: "50%",
-          background: "rgba(243,224,168,0.15)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: "18px", fontWeight: 700, color: "#f3e0a8",
-        }}>L</div>
-        <div>
-          <div style={{ fontSize: "15px", fontWeight: 700, color: "#f3e0a8" }}>Lex</div>
-          <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)" }}>
-            Assistente Jurídico · Marques & Cunha
-          </div>
-        </div>
-        <div style={{
-          marginLeft: "auto",
-          width: 10, height: 10, borderRadius: "50%",
-          background: "#25D366",
-          boxShadow: "0 0 6px rgba(37,211,102,0.6)",
-        }} />
-      </div>
+    <ChatShell>
+      {messages.map(m => m.role === "bot"
+        ? <BotBubble key={m.id} text={m.text} />
+        : <UserBubble key={m.id} text={m.text} />)}
 
-      {/* Messages */}
-      <div style={{
-        flex: 1, overflowY: "auto", padding: "16px",
-        display: "flex", flexDirection: "column",
-      }}>
-        {renderMessages()}
+      {isTyping && <TypingRow />}
 
-        {isTyping && (
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-            <div style={{
-              width: 30, height: 30, borderRadius: "50%",
-              background: "linear-gradient(135deg, #15253f, #1e3a5f)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "14px", color: "#f3e0a8", fontWeight: 700,
-            }}>L</div>
-            <div style={{
-              background: "#f5f0e6", borderRadius: "14px", padding: "10px 16px",
-              display: "flex", gap: "4px",
-            }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{
-                  width: 7, height: 7, borderRadius: "50%",
-                  background: "#b79f6f",
-                  animation: `lexBounce 1.4s ease-in-out ${i * 0.2}s infinite`,
-                }} />
-              ))}
-            </div>
-          </div>
-        )}
+      {renderUI()}
 
-        {renderUI()}
-
-        <div ref={bottomRef} />
-      </div>
-
-      {/* Footer */}
-      <div style={{
-        padding: "9px 16px",
-        borderTop: "1px solid #f0ece4",
-        background: "#faf8f4",
-        textAlign: "center",
-        fontSize: "10.5px",
-        color: "#bbb",
-      }}>
-        🔒 Informações confidenciais · Marques & Cunha Advogados · OAB/SP
-      </div>
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-        @keyframes lexBounce {
-          0%, 60%, 100% { transform: translateY(0); }
-          30%            { transform: translateY(-7px); }
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #e0d8c8; border-radius: 4px; }
-      `}</style>
-    </div>
+      <div ref={bottomRef} />
+    </ChatShell>
   );
 }
