@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
+import LexChatbot from "./LexChatbot";
 
 // =============================================
 // ⚠️  CONFIGURAÇÃO — ALTERE ANTES DE PUBLICAR
 // =============================================
-const WHATSAPP_NUMBER = "5513997717255";
+const WHATSAPP_NUMBER = "5513991791053";
 // =============================================
 
 // ─── Taxas médias do BACEN por modalidade (% ao mês, ref. 2025–2026) ───
@@ -344,13 +345,7 @@ export default function HubLex() {
         />
         <OptBtn icon="🔒" label="Perdi minha conta"
           sub="Instagram, Facebook, WhatsApp, TikTok, e-mail"
-          onClick={() => {
-            addUser("Perdi minha conta");
-            setVertical("conta");
-            botDelay("Para recuperação de contas, vou te redirecionar para nosso assistente especializado.", 1200, () => {
-              setShowUI("redirect-lex");
-            });
-          }}
+          onClick={() => { setVertical("conta"); }}
         />
         <OptBtn icon="📊" label="Estou com juros abusivos"
           sub="Empréstimo, cartão, cheque especial, financiamento"
@@ -377,29 +372,7 @@ export default function HubLex() {
       </div>
     );
 
-    // ─── REDIRECT LEX ───
-    if (showUI === "redirect-lex") return (
-      <div style={{
-        background: "linear-gradient(135deg, #15253f, #1e3a5f)",
-        borderRadius: "14px", padding: "18px", textAlign: "center",
-      }}>
-        <div style={{ fontSize: "14px", fontWeight: 700, color: "#f3e0a8", marginBottom: "8px" }}>
-          Assistente de Recuperação de Contas
-        </div>
-        <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", marginBottom: "14px" }}>
-          Nosso chatbot especializado vai diagnosticar seu caso e orientar os próximos passos.
-        </div>
-        <button onClick={() => window.open("https://falecomlex.vercel.app/", "_blank")}
-          style={{
-            padding: "12px 24px",
-            background: "linear-gradient(135deg, #b79f6f, #d4b978)",
-            border: "none", borderRadius: "10px", cursor: "pointer",
-            fontSize: "13px", fontWeight: 700, color: "#15253f",
-            fontFamily: "'Montserrat', sans-serif",
-          }}
-        >Abrir assistente de contas →</button>
-      </div>
-    );
+
 
     // ═══════════════════════════════════════
     // GOLPE FLOW
@@ -582,9 +555,29 @@ export default function HubLex() {
             setJurosTipo(k);
             addUser(v.label);
             addJ("Tipo de dívida", v.label);
-            botDelay("**Você sabe qual é a taxa de juros que está pagando?**", 1000, () => setShowUI("juros-sabe-taxa"));
+            botDelay("**Qual é o valor total aproximado da sua dívida?**", 1000, () => setShowUI("juros-valor-total"));
           }} />
         ))}
+      </div>
+    );
+
+    if (showUI === "juros-valor-total") return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+        <OptBtn label="Acima de R$ 20.000" small onClick={() => {
+          addUser("Acima de R$ 20.000");
+          addJ("Valor total da dívida", "Acima de R$ 20.000");
+          botDelay("**Você sabe qual é a taxa de juros que está pagando?**", 1000, () => setShowUI("juros-sabe-taxa"));
+        }} />
+        <OptBtn label="Entre R$ 5.000 e R$ 20.000" small onClick={() => {
+          addUser("Entre R$ 5.000 e R$ 20.000");
+          addJ("Valor total da dívida", "R$ 5.000 a R$ 20.000");
+          botDelay("**Você sabe qual é a taxa de juros que está pagando?**", 1000, () => setShowUI("juros-sabe-taxa"));
+        }} />
+        <OptBtn label="Abaixo de R$ 5.000" small onClick={() => {
+          addUser("Abaixo de R$ 5.000");
+          addJ("Valor total da dívida", "Abaixo de R$ 5.000");
+          botDelay("**Você sabe qual é a taxa de juros que está pagando?**", 1000, () => setShowUI("juros-sabe-taxa"));
+        }} />
       </div>
     );
 
@@ -1283,6 +1276,9 @@ export default function HubLex() {
   // ═══════════════════════════════════════
   // MAIN RENDER
   // ═══════════════════════════════════════
+
+  // ─── Se escolheu "Perdi minha conta", renderiza o Lex inline ───
+  if (vertical === "conta") return <LexChatbot />;
 
   return (
     <div style={{
