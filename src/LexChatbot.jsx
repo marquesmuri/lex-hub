@@ -443,7 +443,12 @@ export default function LexChatbot() {
     setTimeout(() => { setIsTyping(false); addBot(text); if (after) after(); }, delay);
   };
 
+  // Guarda contra dupla execução (React.StrictMode monta o efeito duas vezes em dev)
+  const didInit = useRef(false);
+
   useEffect(() => {
+    if (didInit.current) return;
+    didInit.current = true;
     setTimeout(() => {
       addBot("Olá! Eu sou o **Lex**, assistente jurídico do escritório **Marques & Cunha**. 👋");
       botDelay("Estou aqui para entender o que aconteceu com sua conta e verificar se há amparo jurídico para o seu caso.", 1600,

@@ -174,7 +174,12 @@ export default function HubLex() {
   }, [messages, showUI, isTyping]);
 
   // ─── Init ───
+  // Guarda contra dupla execução (React.StrictMode monta o efeito duas vezes em dev)
+  const didInit = useRef(false);
+
   useEffect(() => {
+    if (didInit.current) return;
+    didInit.current = true;
     setTimeout(() => {
       addBot("Olá! Eu sou o **Lex**, assistente jurídico do escritório **Marques & Cunha**. 👋");
       botDelay("Estou aqui para entender sua situação e verificar se podemos te ajudar juridicamente.", 1500,
