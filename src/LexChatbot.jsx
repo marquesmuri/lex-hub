@@ -944,7 +944,9 @@ export default function LexChatbot() {
         );
       } else if (platform === "whatsapp") {
         botDelay("Banimento ou suspensão indevida do WhatsApp **pode ter forte respaldo jurídico** no Brasil.", 900,
-          () => botDelay("Vou entender melhor o seu caso.", 900, () => setShowUI("wa_ban_type"))
+          () => botDelay("Vou entender melhor o seu caso.", 900,
+            () => botDelay("**Que tipo de bloqueio** aparece quando você tenta usar o WhatsApp?", 1000, () => setShowUI("wa_ban_type"))
+          )
         );
       } else if (platform === "email") {
         botDelay("Bloqueio de e-mail pode ter respaldo jurídico se causou danos reais.", 800,
@@ -1817,7 +1819,7 @@ export default function LexChatbot() {
           {!isTyping && showUI === "wa_issue_type" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "7px", marginTop: "4px" }}>
               <OptBtn onClick={() => { setWaIssueType("hacked"); addUser("Alguém clonou ou acessou minha conta"); addJourney("WhatsApp — Problema", "Clonagem / acesso indevido"); botDelay("Entendido. Uma pergunta rápida para te dar o caminho certo:", 800, () => setShowUI("wa_hacked_type")); }} icon="🔓" label="Alguém clonou ou acessou minha conta" sub="Clonagem, número no celular de outra pessoa" />
-              <OptBtn onClick={() => { setWaIssueType("banned"); addUser("Minha conta foi banida / suspensa pelo WhatsApp"); addJourney("WhatsApp — Problema", "Banimento / suspensão"); botDelay("Entendido. Vou fazer algumas perguntas para entender seu caso.", 900, () => setShowUI("wa_ban_type")); }} icon="🚫" label="Minha conta foi banida ou suspensa pelo WhatsApp" sub="Recebeu mensagem de banimento ou suspensão" />
+              <OptBtn onClick={() => { setWaIssueType("banned"); addUser("Minha conta foi banida / suspensa pelo WhatsApp"); addJourney("WhatsApp — Problema", "Banimento / suspensão"); botDelay("Entendido. Vou fazer algumas perguntas para entender seu caso.", 900, () => botDelay("**Que tipo de bloqueio** aparece quando você tenta usar o WhatsApp?", 1000, () => setShowUI("wa_ban_type"))); }} icon="🚫" label="Minha conta foi banida ou suspensa pelo WhatsApp" sub="Recebeu mensagem de banimento ou suspensão" />
               <OptBtn onClick={() => { setWaIssueType("other"); addUser("Outro problema com o WhatsApp"); addJourney("WhatsApp — Problema", "Outro"); escalate("Vamos registrar seu caso para análise."); }} icon="❓" label="Outro problema" />
             </div>
           )}
@@ -1825,9 +1827,9 @@ export default function LexChatbot() {
           {/* WA: tipo de banimento */}
           {!isTyping && showUI === "wa_ban_type" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "7px", marginTop: "4px" }}>
-              <OptBtn onClick={() => { addUser("Banimento permanente — \"Esta conta está impedida de usar o WhatsApp\""); addJourney("WhatsApp — Tipo de banimento", "Permanente"); botDelay("Banimento permanente sem justificativa é o cenário com **maior potencial jurídico** no WhatsApp.", 1000, () => botDelay("A conta era usada para trabalho ou negócios?", 900, () => setShowUI("wa_economic"))); }} icon="⛔" label="Banimento permanente" sub='"Esta conta está impedida de usar o WhatsApp"' />
+              <OptBtn onClick={() => { addUser("Banimento permanente — \"Esta conta está impedida de usar o WhatsApp\""); addJourney("WhatsApp — Tipo de banimento", "Permanente"); botDelay("Banimento permanente sem justificativa é o cenário com **maior potencial jurídico** no WhatsApp.", 1000, () => botDelay("**A conta era usada para trabalho ou negócios?**", 900, () => setShowUI("wa_economic"))); }} icon="⛔" label="Banimento permanente" sub='"Esta conta está impedida de usar o WhatsApp"' />
               <OptBtn onClick={() => { addUser("Banimento temporário — bloqueio por tempo determinado"); addJourney("WhatsApp — Tipo de banimento", "Temporário"); botDelay("Banimento temporário tende a se resolver aguardando o prazo. Veja os passos:", 900, () => setShowUI("guide_wa_banned")); }} icon="⏳" label="Banimento temporário" sub="Bloqueio por 24h, 48h ou alguns dias" />
-              <OptBtn onClick={() => { addUser("Não sei o tipo de banimento"); addJourney("WhatsApp — Tipo de banimento", "Desconhecido"); botDelay("Entendido. Antes de mostrar o guia, uma pergunta rápida:", 900, () => setShowUI("wa_economic")); }} icon="❓" label="Não sei / não aparece mensagem clara" />
+              <OptBtn onClick={() => { addUser("Não sei o tipo de banimento"); addJourney("WhatsApp — Tipo de banimento", "Desconhecido"); botDelay("Entendido. Antes de mostrar o guia, uma pergunta rápida:", 900, () => botDelay("**A conta era usada para trabalho ou negócios?**", 900, () => setShowUI("wa_economic"))); }} icon="❓" label="Não sei / não aparece mensagem clara" />
             </div>
           )}
 
@@ -2312,8 +2314,8 @@ export default function LexChatbot() {
           {/* 2FA: celular perdido — número ainda ativo? */}
           {!isTyping && showUI === "twofa_phone_active" && (
             <div style={col}>
-              <OptBtn onClick={() => { addUser("Sim, o número ainda está ativo em outro aparelho"); addJourney("2FA — Número ainda ativo", "Sim"); botDelay("Ótimo — com o número ativo, você tem acesso ao SMS e provavelmente a outros recursos também.", 900, () => setShowUI("twofa_resources")); }} icon="✅" label="Sim, o número ainda está ativo em outro aparelho" sub="Chip no novo celular ou em outro aparelho" />
-              <OptBtn onClick={() => { addUser("Não, perdi o número junto com o celular"); addJourney("2FA — Número ainda ativo", "Não"); botDelay("Entendido — sem o número, vamos verificar o que mais você tem disponível.", 900, () => setShowUI("twofa_resources")); }} icon="❌" label="Não, perdi o número junto com o celular" sub="Não tenho mais acesso a esse número" />
+              <OptBtn onClick={() => { addUser("Sim, o número ainda está ativo em outro aparelho"); addJourney("2FA — Número ainda ativo", "Sim"); botDelay("Ótimo — com o número ativo, você tem acesso ao SMS e provavelmente a outros recursos também.", 900, () => botDelay("**Você possui algum desses recursos?**", 900, () => setShowUI("twofa_resources"))); }} icon="✅" label="Sim, o número ainda está ativo em outro aparelho" sub="Chip no novo celular ou em outro aparelho" />
+              <OptBtn onClick={() => { addUser("Não, perdi o número junto com o celular"); addJourney("2FA — Número ainda ativo", "Não"); botDelay("Entendido — sem o número, vamos verificar o que mais você tem disponível.", 900, () => botDelay("**Você possui algum desses recursos?**", 900, () => setShowUI("twofa_resources"))); }} icon="❌" label="Não, perdi o número junto com o celular" sub="Não tenho mais acesso a esse número" />
             </div>
           )}
 
