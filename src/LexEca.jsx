@@ -38,7 +38,9 @@ export default function LexEca({ onGoToRecovery }) {
         "Desde junho de 2026, as redes sociais passaram a exigir **alvará judicial** para conteúdo com crianças e adolescentes em algumas situações — e nem sempre é óbvio se o seu caso se encaixa.",
         1600, () =>
         botDelay("Vou te fazer algumas perguntas rápidas para indicar o caminho certo. Leva uns 2 minutos.", 1400, () =>
-          setShowUI("q_aparece")
+          botDelay("Para começar: uma criança ou adolescente aparece no conteúdo que você produz?", 1200, () =>
+            setShowUI("q_aparece")
+          )
         )
       )
     );
