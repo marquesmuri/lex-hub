@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import LexChatbot from "./LexChatbot";
+import LexEca from "./LexEca";
 import {
   WHATSAPP_NUMBER, DOURADO, AREIA, SERIF,
   OptBtn, PrimaryBtn, BotBubble, UserBubble, TypingRow, ChatShell, colStack,
@@ -250,6 +251,10 @@ export default function HubLex() {
         <OptBtn icon="🔒" label="Perdi minha conta"
           sub="Instagram, Facebook, WhatsApp, TikTok, e-mail"
           onClick={() => { setVertical("conta"); }}
+        />
+        <OptBtn icon="👶" label="Faço conteúdo com meus filhos"
+          sub="Alvará infantil, influenciador mirim, notificação da Meta, monetização"
+          onClick={() => { setVertical("eca"); }}
         />
         <OptBtn icon="📊" label="Estou com juros abusivos"
           sub="Empréstimo, cartão, cheque especial, financiamento"
@@ -1105,6 +1110,9 @@ export default function HubLex() {
 
   // ─── Se escolheu "Perdi minha conta", renderiza o Lex inline ───
   if (vertical === "conta") return <LexChatbot />;
+
+  // ─── Se escolheu "Faço conteúdo com meus filhos", renderiza o lex-eca ───
+  if (vertical === "eca") return <LexEca onGoToRecovery={() => setVertical("conta")} />;
 
   return (
     <ChatShell>
