@@ -37,8 +37,8 @@ export default function LexEca({ onGoToRecovery }) {
       botDelay(
         "Desde junho de 2026, as redes sociais passaram a exigir **alvará judicial** para conteúdo com crianças e adolescentes em algumas situações — e nem sempre é óbvio se o seu caso se encaixa.",
         1600, () =>
-        botDelay("Vou te fazer algumas perguntas rápidas para indicar o caminho certo. Leva uns 2 minutos.", 1400, () =>
-          botDelay("Para começar: uma criança ou adolescente aparece no conteúdo que você produz?", 1200, () =>
+        botDelay("Vou te fazer algumas perguntas rápidas para indicar o caminho certo. Leva uns **2 minutos**.", 1400, () =>
+          botDelay("Para começar: **uma criança ou adolescente aparece no conteúdo que você produz?**", 1200, () =>
             setShowUI("q_aparece")
           )
         )
@@ -130,7 +130,7 @@ export default function LexEca({ onGoToRecovery }) {
     setIsTyping(false);
     setInputVal("");
     setShowUI(null);
-    botDelay("Vamos recomeçar. Uma criança ou adolescente aparece no conteúdo que você produz?", 600, () =>
+    botDelay("Vamos recomeçar. **Uma criança ou adolescente aparece no conteúdo que você produz?**", 600, () =>
       setShowUI("q_aparece")
     );
   };
@@ -139,19 +139,19 @@ export default function LexEca({ onGoToRecovery }) {
   const goFaixa = (v) => {
     answers.current.faixaEtaria = v;
     if (v === "primeira_infancia") {
-      botDelay("Importante: casos de **primeira infância** recebem atenção redobrada da Justiça — o pedido precisa ser bem delimitado. É exatamente o tipo de caso em que faz diferença ter apoio jurídico especializado.", 1500, () =>
-        botDelay("Aparece mais de uma criança ou adolescente no conteúdo?", 1100, () => setShowUI("q_quantos"))
+      botDelay("Importante: casos de **primeira infância** recebem **atenção redobrada da Justiça** — o pedido precisa ser **bem delimitado**. É exatamente o tipo de caso em que faz diferença ter apoio jurídico especializado.", 1500, () =>
+        botDelay("**Aparece mais de uma criança ou adolescente no conteúdo?**", 1100, () => setShowUI("q_quantos"))
       );
     } else {
-      botDelay("Aparece mais de uma criança ou adolescente no conteúdo?", 1100, () => setShowUI("q_quantos"));
+      botDelay("**Aparece mais de uma criança ou adolescente no conteúdo?**", 1100, () => setShowUI("q_quantos"));
     }
   };
 
   const goQuantos = (v) => {
     answers.current.qtdMenores = v;
-    const proximo = () => botDelay("Você já recebeu alguma notificação da Meta (Instagram/Facebook) ou de outra plataforma pedindo o alvará, com prazo para responder?", 1300, () => setShowUI("q_notificacao"));
+    const proximo = () => botDelay("**Você já recebeu alguma notificação** da Meta (Instagram/Facebook) ou de outra plataforma pedindo o alvará, **com prazo para responder?**", 1300, () => setShowUI("q_notificacao"));
     if (v === "doisMais") {
-      botDelay("Nesse caso, cada criança precisa do seu próprio alvará — a gente cuida de todos no mesmo atendimento.", 1300, proximo);
+      botDelay("Nesse caso, **cada criança precisa do seu próprio alvará** — a gente cuida de todos no mesmo atendimento.", 1300, proximo);
     } else {
       proximo();
     }
@@ -160,9 +160,9 @@ export default function LexEca({ onGoToRecovery }) {
   const entrarColeta = (ramo) => {
     answers.current.ramoColeta = ramo;
     const intro = ramo === "A"
-      ? "Entendi seu caso. Ele provavelmente não exige alvará, mas há cuidados importantes de privacidade e proteção de dados. Vou te conectar com nossa equipe. Só preciso de dois dados:"
-      : "Pronto — já tenho o que preciso para te orientar. Vou te passar para um especialista dar sequência. Só preciso de dois dados:";
-    botDelay(intro, 1300, () => botDelay("Qual é o seu nome?", 900, () => setShowUI("coleta_nome")));
+      ? "Entendi seu caso. Ele **provavelmente não exige alvará**, mas há cuidados importantes de **privacidade e proteção de dados**. Vou te conectar com nossa equipe. Só preciso de **dois dados**:"
+      : "Pronto — já tenho o que preciso para te orientar. Vou te passar para um **especialista** dar sequência. Só preciso de **dois dados**:";
+    botDelay(intro, 1300, () => botDelay("**Qual é o seu nome?**", 900, () => setShowUI("coleta_nome")));
   };
 
   const submitNome = () => {
@@ -171,7 +171,7 @@ export default function LexEca({ onGoToRecovery }) {
     answers.current.nomeResponsavel = v;
     addUser(v);
     setInputVal("");
-    botDelay("E qual o @ ou o link do perfil? (se preferir, toque em pular)", 900, () => setShowUI("coleta_perfil"));
+    botDelay("E qual o **@ ou o link do perfil?** (se preferir, toque em pular)", 900, () => setShowUI("coleta_perfil"));
   };
 
   const submitPerfil = (pular) => {
@@ -181,19 +181,19 @@ export default function LexEca({ onGoToRecovery }) {
     setInputVal("");
     // classificação final do ramo que passou pela coleta
     if (answers.current.ramoColeta === "A") {
-      botDelay("Perfeito. Um resumo já vai com você para o nosso time.", 1100, () => setShowUI("cta_A"));
+      botDelay("Perfeito. Um **resumo** já vai com você para o nosso time.", 1100, () => setShowUI("cta_A"));
     } else if (answers.current.habitualidade === "pontual") {
-      botDelay("Seu caso está numa **zona limítrofe**: a exposição parece pontual, e nem toda participação eventual exige alvará.", 1400, () =>
-        botDelay("Vale uma conversa com nossa equipe para avaliar com precisão e evitar tanto o risco de bloqueio quanto um pedido desnecessário.", 1400, () => setShowUI("cta_limitrofe"))
+      botDelay("Seu caso está numa **zona limítrofe**: a exposição parece **pontual**, e nem toda participação eventual exige alvará.", 1400, () =>
+        botDelay("Vale uma conversa com nossa equipe para avaliar com precisão e evitar tanto o **risco de bloqueio** quanto um **pedido desnecessário**.", 1400, () => setShowUI("cta_limitrofe"))
       );
     } else {
       const u = calcUrgencia();
-      const fechar = () => botDelay("Um especialista do Marques & Cunha vai te explicar os documentos e conduzir o pedido. Bora resolver?", 1300, () => setShowUI("cta_B"));
-      botDelay("Pelo que você me contou, seu caso **se enquadra na exigência de alvará judicial** — conteúdo monetizado ou impulsionado com participação habitual de criança/adolescente.", 1500, () => {
+      const fechar = () => botDelay("Um **especialista** do Marques & Cunha vai te explicar os documentos e conduzir o pedido. Bora resolver?", 1300, () => setShowUI("cta_B"));
+      botDelay("Pelo que você me contou, seu caso **se enquadra na exigência de alvará judicial** — conteúdo **monetizado ou impulsionado** com participação **habitual** de criança/adolescente.", 1500, () => {
         if (u === "alta") {
-          botDelay("E como você já recebeu notificação com prazo, isso é **urgente**: sem regularização, a conta pode ser bloqueada. Dá para protocolar com pedido de urgência e usar o comprovante para segurar a plataforma. Vamos agir rápido.", 1600, fechar);
+          botDelay("E como você já recebeu notificação com prazo, isso é **urgente**: sem regularização, **a conta pode ser bloqueada**. Dá para protocolar com **pedido de urgência** e usar o comprovante para segurar a plataforma. Vamos agir rápido.", 1600, fechar);
         } else if (u === "media") {
-          botDelay("Pelo tamanho da sua conta, há risco real de notificação a qualquer momento — melhor se antecipar do que correr atrás depois de um bloqueio.", 1500, fechar);
+          botDelay("Pelo tamanho da sua conta, há **risco real de notificação** a qualquer momento — melhor **se antecipar** do que correr atrás depois de um bloqueio.", 1500, fechar);
         } else {
           fechar();
         }
@@ -211,13 +211,13 @@ export default function LexEca({ onGoToRecovery }) {
           <div style={colStack}>
             <OptBtn icon="👶" label="Sim, aparece" onClick={() => pick("Sim, aparece", () => {
               answers.current.apareceMenor = "sim";
-              botDelay("Antes de qualquer coisa, preciso confirmar um ponto de proteção. O conteúdo com a criança envolve algum destes elementos?", 1300, () =>
-                botDelay("• cenas sensuais, erotizadas ou com roupas/poses de adulto\n• situações vexatórias, degradantes ou que exponham a criança ao ridículo\n• apostas, jogos de azar, álcool, cigarro ou produtos proibidos para menores\n• desafios perigosos, discurso de ódio ou discriminação", 1400, () => setShowUI("q_vedacao"))
+              botDelay("Antes de qualquer coisa, preciso confirmar um **ponto de proteção**. **O conteúdo com a criança envolve algum destes elementos?**", 1300, () =>
+                botDelay("• **cenas sensuais ou erotizadas**, ou com roupas/poses de adulto\n• **situações vexatórias ou degradantes**, que exponham a criança ao ridículo\n• **apostas, jogos de azar, álcool, cigarro** ou produtos proibidos para menores\n• **desafios perigosos**, **discurso de ódio** ou discriminação", 1400, () => setShowUI("q_vedacao"))
               );
             })} />
             <OptBtn icon="🚫" label="Não" onClick={() => pick("Não", () => {
               answers.current.apareceMenor = "nao";
-              botDelay("Pelo que você me contou, seu caso não envolve exposição de criança ou adolescente — então a exigência de alvará não se aplica.", 1300, () => setShowUI("cta_fora"));
+              botDelay("Pelo que você me contou, seu caso **não envolve exposição de criança ou adolescente** — então a **exigência de alvará não se aplica**.", 1300, () => setShowUI("cta_fora"));
             })} />
           </div>
         );
@@ -227,20 +227,20 @@ export default function LexEca({ onGoToRecovery }) {
           <div style={colStack}>
             <OptBtn icon="✅" label="Não, nada disso" onClick={() => pick("Não, nada disso", () => {
               answers.current.vedacao = "nao";
-              botDelay("Esse conteúdo gera algum retorno financeiro para você? Conta qualquer uma destas formas:", 1200, () =>
-                botDelay("• anúncios ou programa de monetização (YouTube, bônus de Reels etc.)\n• fundo de criador, assinaturas, gorjetas ou \u201Cgifts\u201D\n• publicidade, patrocínio, recebimento de produtos ou permuta", 1300, () => setShowUI("q_monetiza"))
+              botDelay("**Esse conteúdo gera algum retorno financeiro para você?** Conta qualquer uma destas formas:", 1200, () =>
+                botDelay("• **anúncios ou programa de monetização** (YouTube, bônus de Reels etc.)\n• **fundo de criador, assinaturas, gorjetas** ou \u201Cgifts\u201D\n• **publicidade, patrocínio**, recebimento de produtos ou **permuta**", 1300, () => setShowUI("q_monetiza"))
               );
             })} />
             <OptBtn icon="⚠️" label="Sim, algum deles" onClick={() => pick("Sim, algum deles", () => {
               answers.current.vedacao = "sim"; // trava C
-              botDelay("Obrigado pela sinceridade. Esse tipo de conteúdo tem uma proteção especial na lei, e não é algo que um alvará possa autorizar.", 1400, () =>
-                botDelay("O mais importante agora é a segurança da criança. O melhor caminho é conversar diretamente com um advogado, que vai te orientar com cuidado sobre a situação.", 1500, () => setShowUI("cta_C"))
+              botDelay("Obrigado pela sinceridade. Esse tipo de conteúdo tem uma **proteção especial na lei**, e **não é algo que um alvará possa autorizar**.", 1400, () =>
+                botDelay("O mais importante agora é a **segurança da criança**. O melhor caminho é **conversar diretamente com um advogado**, que vai te orientar com cuidado sobre a situação.", 1500, () => setShowUI("cta_C"))
               );
             })} />
             <OptBtn icon="🤔" label="Não tenho certeza" onClick={() => pick("Não tenho certeza", () => {
               answers.current.vedacao = "naosei";
-              botDelay("Sem problema — a equipe confirma isso com você depois. Esse conteúdo gera algum retorno financeiro?", 1300, () =>
-                botDelay("• anúncios/monetização • fundo de criador, assinaturas, gifts • publicidade, produtos ou permuta", 1200, () => setShowUI("q_monetiza"))
+              botDelay("Sem problema — a equipe confirma isso com você depois. **Esse conteúdo gera algum retorno financeiro?**", 1300, () =>
+                botDelay("• **anúncios/monetização** • **fundo de criador, assinaturas, gifts** • **publicidade**, produtos ou **permuta**", 1200, () => setShowUI("q_monetiza"))
               );
             })} />
           </div>
@@ -251,15 +251,15 @@ export default function LexEca({ onGoToRecovery }) {
           <div style={colStack}>
             <OptBtn icon="💰" label="Sim, alguma delas" onClick={() => pick("Sim, alguma delas", () => {
               answers.current.monetiza = "sim";
-              botDelay("Com que frequência a criança aparece nesse conteúdo?", 1100, () => setShowUI("q_habitual"));
+              botDelay("**Com que frequência a criança aparece nesse conteúdo?**", 1100, () => setShowUI("q_habitual"));
             })} />
             <OptBtn icon="🚫" label="Não, nenhuma" onClick={() => pick("Não, nenhuma", () => {
               answers.current.monetiza = "nao";
-              botDelay("E você já pagou para impulsionar ou promover algum post em que essa criança aparece?", 1200, () => setShowUI("q_impulsiona"));
+              botDelay("E você já **pagou para impulsionar ou promover** algum post em que essa criança aparece?", 1200, () => setShowUI("q_impulsiona"));
             })} />
             <OptBtn icon="🤔" label="Não tenho certeza" onClick={() => pick("Não tenho certeza", () => {
               answers.current.monetiza = "naosei";
-              botDelay("Com que frequência a criança aparece nesse conteúdo?", 1100, () => setShowUI("q_habitual"));
+              botDelay("**Com que frequência a criança aparece nesse conteúdo?**", 1100, () => setShowUI("q_habitual"));
             })} />
           </div>
         );
@@ -269,7 +269,7 @@ export default function LexEca({ onGoToRecovery }) {
           <div style={colStack}>
             <OptBtn icon="📈" label="Sim, já impulsionei" onClick={() => pick("Sim, já impulsionei", () => {
               answers.current.impulsiona = "sim";
-              botDelay("Com que frequência a criança aparece nesse conteúdo?", 1100, () => setShowUI("q_habitual"));
+              botDelay("**Com que frequência a criança aparece nesse conteúdo?**", 1100, () => setShowUI("q_habitual"));
             })} />
             <OptBtn icon="🚫" label="Não, nunca" onClick={() => pick("Não, nunca", () => {
               answers.current.impulsiona = "nao";
@@ -283,15 +283,15 @@ export default function LexEca({ onGoToRecovery }) {
           <div style={colStack}>
             <OptBtn icon="🔁" label="Toda semana / é rotina" onClick={() => pick("Toda semana / é rotina", () => {
               answers.current.habitualidade = "rotina";
-              botDelay("Qual a idade da criança ou adolescente? (Se for mais de uma, considere a mais nova.)", 1100, () => setShowUI("q_faixa"));
+              botDelay("**Qual a idade da criança ou adolescente?** (Se for mais de uma, considere a mais nova.)", 1100, () => setShowUI("q_faixa"));
             })} />
             <OptBtn icon="📅" label="Algumas vezes por mês" onClick={() => pick("Algumas vezes por mês", () => {
               answers.current.habitualidade = "ocasional";
-              botDelay("Qual a idade da criança ou adolescente? (Se for mais de uma, considere a mais nova.)", 1100, () => setShowUI("q_faixa"));
+              botDelay("**Qual a idade da criança ou adolescente?** (Se for mais de uma, considere a mais nova.)", 1100, () => setShowUI("q_faixa"));
             })} />
             <OptBtn icon="1️⃣" label="Foi pontual / poucas vezes" onClick={() => pick("Foi pontual / poucas vezes", () => {
               answers.current.habitualidade = "pontual";
-              botDelay("Qual a idade da criança ou adolescente? (Se for mais de uma, considere a mais nova.)", 1100, () => setShowUI("q_faixa"));
+              botDelay("**Qual a idade da criança ou adolescente?** (Se for mais de uma, considere a mais nova.)", 1100, () => setShowUI("q_faixa"));
             })} />
           </div>
         );
@@ -318,15 +318,15 @@ export default function LexEca({ onGoToRecovery }) {
           <div style={colStack}>
             <OptBtn icon="⏰" label="Sim, recebi com prazo" onClick={() => pick("Sim, recebi com prazo", () => {
               answers.current.notificacao = "sim_prazo";
-              botDelay("Por último: qual o tamanho aproximado da conta onde o conteúdo é publicado?", 1100, () => setShowUI("q_seguidores"));
+              botDelay("Por último: **qual o tamanho aproximado da conta** onde o conteúdo é publicado?", 1100, () => setShowUI("q_seguidores"));
             })} />
             <OptBtn icon="📭" label="Não recebi" onClick={() => pick("Não recebi", () => {
               answers.current.notificacao = "nao";
-              botDelay("Por último: qual o tamanho aproximado da conta onde o conteúdo é publicado?", 1100, () => setShowUI("q_seguidores"));
+              botDelay("Por último: **qual o tamanho aproximado da conta** onde o conteúdo é publicado?", 1100, () => setShowUI("q_seguidores"));
             })} />
             <OptBtn icon="😟" label="Ainda não, mas tenho receio" onClick={() => pick("Ainda não, mas tenho receio", () => {
               answers.current.notificacao = "receio";
-              botDelay("Por último: qual o tamanho aproximado da conta onde o conteúdo é publicado?", 1100, () => setShowUI("q_seguidores"));
+              botDelay("Por último: **qual o tamanho aproximado da conta** onde o conteúdo é publicado?", 1100, () => setShowUI("q_seguidores"));
             })} />
           </div>
         );
