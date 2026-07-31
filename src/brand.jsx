@@ -300,7 +300,9 @@ export const META_VERIFIED_BADGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg
 export const fmt = (text) => text
   .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
   .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#15253f;font-weight:700;">$1</a>')
-  .replace(/::mv::/g, `<img src="${META_VERIFIED_BADGE}" alt="Meta Verified" style="width:16px;height:16px;vertical-align:middle;display:inline-block;margin-left:3px;margin-right:0;position:relative;top:-1px;" />`);
+  .replace(/::mv::/g, `<img src="${META_VERIFIED_BADGE}" alt="Meta Verified" style="width:16px;height:16px;vertical-align:middle;display:inline-block;margin-left:3px;margin-right:0;position:relative;top:-1px;" />`)
+  // sem isto, listas escritas com \n viram um parágrafo corrido dentro do dangerouslySetInnerHTML
+  .replace(/\n/g, "<br />");
 
 // ─── Avatar do Lex — logo do escritório sobre o círculo institucional ───
 export function LexAvatar({ size = 26, glow = false }) {
