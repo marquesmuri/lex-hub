@@ -3,6 +3,10 @@ import {
   WHATSAPP_NUMBER, META_VERIFIED_BADGE, fmt,
   OptBtn, GhostBtn, BotBubble, UserBubble, TypingRow, ChatShell,
 } from "./brand";
+import {
+  MOB_STEPS, MOB_GUIDE, MOB_DAMAGE_OPTIONS, detectMobilityApp, getMobStep,
+  visibleOptions, nextMobStep, countOptional, classifyMobility, buildMobilityBlock,
+} from "./LexMobilidade";
 const APP_LOGOS = {
   tiktok: "data:image/jpeg;base64," +
     "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAd" +
@@ -427,6 +431,11 @@ export default function LexChatbot() {
   const [officialTried,   setOfficialTried]   = useState(null); // canais oficiais Meta: sim|sem_acesso|nao
   const [officialOutcome, setOfficialOutcome] = useState(null); // resultado no canal oficial
   const [layer,         setLayer]         = useState(null); // Etapa 3: camada Meta afetada
+  // ─── Fluxo Mobilidade (Uber/99/InDrive/iFood) — ver LexMobilidade.jsx ───
+  const [mobActive, setMobActive] = useState(false);
+  const [mobStepId, setMobStepId] = useState(null);
+  const [mobMulti,  setMobMulti]  = useState([]);
+  const mobRef = useRef({ app: null, answers: {}, labels: {} }); // ref: lido dentro de callbacks encadeados
   const [sessionAccess, setSessionAccess] = useState(null); // Etapa 3: ainda tem acesso?
 
   const bottomRef = useRef(null);
@@ -470,6 +479,8 @@ export default function LexChatbot() {
   }, [messages, showUI, isTyping]);
 
   // ─── WhatsApp opener ───
+  const damageOptions = mobActive ? MOB_DAMAGE_OPTIONS : DAMAGE_OPTIONS;
+
   const openWhatsApp = () => {
     const probLabels = { muito_alta: "🔥 Muito alta", alta: "⚡ Alta", media: "📋 Moderada", baixa: "ℹ️ Baixa" };
     let msg = `*Novo caso — Lex Assistente Jurídico*\n━━━━━━━━━━━━━━━━\n\n`;
@@ -481,6 +492,9 @@ export default function LexChatbot() {
     if (subApp) msg += `• Aplicativo: ${subApp}\n`;
     if (economic !== null) msg += `• Uso comercial/profissional: ${economic ? "Sim" : "Não"}\n`;
     msg += `\n`;
+
+    // Bloco 1b: Mobilidade (Uber/99/...) — detalhes estruturados + alertas
+    if (mobActive) msg += buildMobilityBlock(mobRef.current.labels, mobRef.current.answers);
 
     // Bloco 2: Diagnóstico do problema (jornada capturada)
     // Labels com bloco dedicado na mensagem são filtrados para evitar duplicidade
@@ -557,7 +571,7 @@ export default function LexChatbot() {
     }
 
     // Bloco 7: Danos
-    const dmg = damages.map(d => DAMAGE_OPTIONS.find(o => o.key === d)?.label).filter(Boolean);
+    const dmg = damages.map(d => damageOptions.find(o => o.key === d)?.label).filter(Boolean);
     if (dmg.length) {
       msg += `*DANOS SOFRIDOS*\n`;
       dmg.forEach(d => { msg += `• ${d}\n`; });
@@ -867,9 +881,115 @@ export default function LexChatbot() {
   };
 
   const onSubApp = (app) => {
+    const mob = detectMobilityApp(app);
+    if (mob) { addUser(app); enterMobility(mob); return; }
     setSubApp(app); addUser(app); addJourney("Aplicativo", app);
     botDelay(`Entendido — sua conta no **${app}** foi afetada.`, 900,
       () => botDelay("O que exatamente aconteceu?", 1000, () => setShowUI("issue"))
+    );
+  };
+
+  // ═══ Fluxo Mobilidade ═══
+  const enterMobility = (app) => {
+    setSubApp(app); setMobActive(true); setDamages([]);
+    mobRef.current = { app, answers: {}, labels: {} };
+    addJourney("Aplicativo", app);
+    botDelay(`Entendido — sua conta no **${app}** foi afetada.`, 900, () => {
+      if (!nameRef.current) {
+        setPendingIssue("mobility");
+        botDelay("Antes de continuar, como posso te chamar?", 800, () => setShowUI("name-early-input"));
+      } else {
+        startMobility();
+      }
+    });
+  };
+
+  const startMobility = () => {
+    botDelay("Vou te fazer algumas **perguntas rápidas** sobre o bloqueio — é só clicar nas opções. Assim o advogado já recebe seu caso completo.", 1100,
+      () => askMobStep(nextMobStep(null, mobRef.current.answers))
+    );
+  };
+
+  const askMobStep = (id) => {
+    if (!id) { finishMobility(); return; }
+    const st = getMobStep(id);
+    const { app, answers } = mobRef.current;
+    setMobMulti([]);
+    botDelay(st.q(app, countOptional(answers)), 900, () => { setMobStepId(id); setShowUI("mob_step"); });
+  };
+
+  const recordMob = (st, value, label, userText) => {
+    const m = mobRef.current;
+    m.answers = { ...m.answers, [st.id]: value };
+    if (!st.gate) m.labels = { ...m.labels, [st.id]: label };
+    addUser(userText ?? (Array.isArray(label) ? label.join(", ") : label));
+    const next = nextMobStep(st.id, m.answers);
+    const r = typeof value === "string" ? st.react?.[value] : null;
+    if (r) botDelay(r, 1200, () => askMobStep(next));
+    else askMobStep(next);
+  };
+
+  const onMobAnswer = (st, opt) => recordMob(st, opt.v, opt.label);
+
+  const onMobContestFirst = () => {
+    addUser("Vou contestar primeiro"); addJourney("Resultado", "Vai contestar no app primeiro");
+    botDelay("Combinado! Guarde **prints e protocolos** de tudo. Se negarem ou não responderem, volte aqui — com a contestação registrada, seu caso fica mais forte. 👊", 1100, () => setShowUI(null));
+  };
+
+  const onMobGuideLegal = () => {
+    addUser("Quero registrar meu caso com o advogado");
+    mobToLegal();
+  };
+
+  const onMobMultiToggle = (st, opt) => {
+    setMobMulti(p => {
+      if (p.includes(opt.v)) return p.filter(v => v !== opt.v);
+      if (opt.exclusive) return [opt.v];
+      const excl = st.options.filter(o => o.exclusive).map(o => o.v);
+      return [...p.filter(v => !excl.includes(v)), opt.v];
+    });
+  };
+
+  const onMobMultiConfirm = (st) => {
+    if (!mobMulti.length) return;
+    const labels = st.options.filter(o => mobMulti.includes(o.v)).map(o => o.label);
+    recordMob(st, [...mobMulti], labels);
+  };
+
+  const onMobText = (st, skip = false) => {
+    const t = inputVal.trim();
+    if (!skip && !t) return;
+    setInputVal("");
+    if (skip) recordMob(st, "", "", "Prefiro não informar");
+    else recordMob(st, t, t);
+  };
+
+  const finishMobility = () => {
+    const { app, answers } = mobRef.current;
+    if (answers.contestou === "nao" && MOB_GUIDE[app]) {
+      botDelay("Uma orientação importante: **registrar a contestação oficial** no app antes da via judicial fortalece muito o seu caso. Veja como fazer:", 1200,
+        () => setShowUI(MOB_GUIDE[app])
+      );
+    } else if (answers.contestou === "nao") {
+      botDelay(`Dica: registre uma contestação na **central de ajuda do ${app}** e guarde o protocolo — isso fortalece o seu caso.`, 1300, () => mobToLegal());
+    } else {
+      mobToLegal();
+    }
+  };
+
+  const mobToLegal = () => {
+    const { app, answers } = mobRef.current;
+    const { prob, scenario, note } = classifyMobility(answers, app);
+    setCaseProbability(prob);
+    const first = (nameRef.current || "").split(" ")[0];
+    botDelay("**Análise preliminar concluída.**", 800,
+      () => botDelay(scenario, 1300,
+        () => botDelay(note, 1200,
+          () => botDelay(`Agora${first ? `, **${first}**` : ""}, conte com suas palavras **o que aconteceu**: o que o app informou, o que você fez depois e qualquer detalhe que ache importante.`, 1100,
+            () => setShowUI("desc-input")
+          )
+        )
+      )
     );
   };
 
@@ -907,6 +1027,8 @@ export default function LexChatbot() {
       botDelay("Antes de continuar, como posso te chamar?", 800, () => setShowUI("name-early-input"));
       return;
     }
+
+    if (key === "mobility") { startMobility(); return; }
 
     // Sub-app specific routing (only for suspended/hacked, NOT for twofa/password)
     if (platform === "other" && subApp && key !== "twofa" && key !== "password") {
@@ -1267,12 +1389,21 @@ export default function LexChatbot() {
 
   const finalizeDamages = () => {
     if (!damages.length) return;
-    addUser(damages.map(d => DAMAGE_OPTIONS.find(o => o.key === d)?.label).join(", "));
+    addUser(damages.map(d => damageOptions.find(o => o.key === d)?.label).join(", "));
     botDelay("✅ **Análise concluída!** Com base em tudo que você compartilhou, seu caso tem potencial para intervenção jurídica.", 900,
       () => botDelay("Um advogado especializado vai analisar sua situação e indicar os próximos passos — sem compromisso.", 1300,
         () => setShowUI("whatsapp")
       )
     );
+  };
+
+  const onOtherAppName = () => {
+    if (!inputVal.trim()) return;
+    const app = inputVal.trim(); setInputVal("");
+    const mob = detectMobilityApp(app);
+    if (mob) { addUser(app); enterMobility(mob); return; }
+    setSubApp(app); addJourney("Aplicativo", app);
+    botDelay(`Entendido — conta no **${app}**. O que exatamente aconteceu?`, 800, () => setShowUI("other_app_issue"));
   };
 
   const col = { display: "flex", flexDirection: "column", gap: "7px", marginTop: "4px" };
@@ -2036,6 +2167,46 @@ export default function LexChatbot() {
             </div>
           )}
 
+          {/* ══ Fluxo Mobilidade — tela genérica (perguntas em LexMobilidade.jsx) ══ */}
+          {!isTyping && showUI === "mob_step" && (() => {
+            const st = getMobStep(mobStepId);
+            if (!st) return null;
+            if (st.type === "text") return (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ display: "flex", gap: "7px" }}>
+                  <input autoFocus value={inputVal} onChange={e => setInputVal(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") onMobText(st); }}
+                    placeholder={st.placeholder || ""}
+                    style={{ flex: 1, padding: "10px 14px", border: "2px solid #e8e0d0", borderRadius: "10px", fontSize: "13px", fontFamily: "inherit", outline: "none", color: "#15253f" }}
+                    onFocus={e => e.target.style.borderColor = "#b79f6f"}
+                    onBlur={e => e.target.style.borderColor = "#e8e0d0"}
+                  />
+                  <button onClick={() => onMobText(st)} style={{ padding: "10px 16px", background: "linear-gradient(135deg, #b79f6f, #e8c97a)", border: "none", borderRadius: "10px", cursor: "pointer", fontSize: "15px", color: "#15253f", fontWeight: "700" }}>→</button>
+                </div>
+                <GhostBtn onClick={() => onMobText(st, true)} label="Prefiro não informar" />
+              </div>
+            );
+            const opts = visibleOptions(st, mobRef.current.answers);
+            if (st.type === "multi") return (
+              <div style={col}>
+                {opts.map(o => (
+                  <OptBtn key={o.v} onClick={() => onMobMultiToggle(st, o)}
+                    icon={mobMulti.includes(o.v) ? "✅" : o.icon} label={o.label} sub={o.sub}
+                    selected={mobMulti.includes(o.v)} />
+                ))}
+                <button onClick={() => onMobMultiConfirm(st)} disabled={!mobMulti.length}
+                  style={{ padding: "12px", background: mobMulti.length ? "linear-gradient(135deg, #15253f, #1d3357)" : "#d0cfc8", border: "none", borderRadius: "11px", cursor: mobMulti.length ? "pointer" : "not-allowed", fontSize: "13px", color: mobMulti.length ? "#f3e0a8" : "#888", fontFamily: "inherit", fontWeight: "700" }}>
+                  Continuar →
+                </button>
+              </div>
+            );
+            return (
+              <div style={col}>
+                {opts.map(o => <OptBtn key={o.v} onClick={() => onMobAnswer(st, o)} icon={o.icon} label={o.label} sub={o.sub} />)}
+              </div>
+            );
+          })()}
+
           {/* Inputs de texto */}
           {!isTyping && showUI === "name-early-input" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -2070,7 +2241,7 @@ export default function LexChatbot() {
           {!isTyping && showUI === "desc-input" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "7px", marginTop: "4px" }}>
               <textarea autoFocus value={inputVal} onChange={e => setInputVal(e.target.value)}
-                placeholder="Descreva o que aconteceu, quando percebeu, que impactos teve..."
+                placeholder={mobActive ? "Ex.: o que o app informou, quando aconteceu, o que você fez depois, se tem prints ou protocolos..." : "Descreva o que aconteceu, quando percebeu, que impactos teve..."}
                 rows={3}
                 style={{ padding: "10px 14px", border: "2px solid #e8e0d0", borderRadius: "10px", fontSize: "13px", fontFamily: "inherit", outline: "none", color: "#15253f", resize: "none" }}
                 onFocus={e => e.target.style.borderColor = "#b79f6f"}
@@ -2083,7 +2254,7 @@ export default function LexChatbot() {
           {/* Danos */}
           {!isTyping && showUI === "damages" && (
             <div style={col}>
-              {DAMAGE_OPTIONS.map(opt => (
+              {damageOptions.map(opt => (
                 <OptBtn key={opt.key}
                   onClick={() => setDamages(p => p.includes(opt.key) ? p.filter(d => d !== opt.key) : [...p, opt.key])}
                   icon={damages.includes(opt.key) ? "✅" : opt.icon}
@@ -2161,8 +2332,13 @@ export default function LexChatbot() {
               <div style={{ padding: "13px 15px", background: "#f0f4fb", border: "1px solid #c8d8f0", borderRadius: "11px", fontSize: "12px", color: "#15253f", lineHeight: "1.55" }}>
                 <strong>💡 Motorista parceiro?</strong> A desativação injusta pode configurar rescisão indireta do contrato de parceria, com direito a indenização por lucros cessantes.
               </div>
+              {mobActive ? (<>
+                <GhostBtn onClick={onMobContestFirst} label="Vou contestar primeiro e volto se não resolver" />
+                <GhostBtn onClick={onMobGuideLegal} label="Quero registrar meu caso com o advogado →" />
+              </>) : (<>
               <GhostBtn onClick={() => { addUser("Consegui resolver pelo Uber"); addJourney("Resultado", "Resolveu pelo app"); botDelay("Ótimo! 🎉 Fico feliz que resolveu. Se o problema voltar, pode contar conosco.", 900, () => setShowUI(null)); }} label="✅ Consegui resolver pelo Uber" />
               <GhostBtn onClick={() => { addUser("Uber não resolveu — quero ajuda jurídica"); escalate("Vamos registrar o caso. Desativações indevidas da Uber têm forte amparo jurídico."); }} label="A Uber não resolveu — quero ajuda jurídica →" />
+              </>)}
             </div>
           )}
 
@@ -2182,8 +2358,13 @@ export default function LexChatbot() {
                 link="https://www.portaldarevisao99.com.br"
                 linkLabel="Portal de revisão 99 →"
               />
+              {mobActive ? (<>
+                <GhostBtn onClick={onMobContestFirst} label="Vou contestar primeiro e volto se não resolver" />
+                <GhostBtn onClick={onMobGuideLegal} label="Quero registrar meu caso com o advogado →" />
+              </>) : (<>
               <GhostBtn onClick={() => { addUser("Consegui resolver pelo 99"); addJourney("Resultado", "Resolveu pelo app"); botDelay("Ótimo! 🎉 Fico feliz que resolveu. Se o problema voltar, pode contar conosco.", 900, () => setShowUI(null)); }} label="✅ Consegui resolver pelo 99" />
               <GhostBtn onClick={() => { addUser("A 99 não resolveu — quero ajuda jurídica"); escalate("Vamos registrar. Bloqueios indevidos em apps de transporte têm amparo jurídico consolidado."); }} label="A 99 não resolveu — quero ajuda jurídica →" />
+              </>)}
             </div>
           )}
 
@@ -2334,13 +2515,13 @@ export default function LexChatbot() {
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <div style={{ display: "flex", gap: "7px" }}>
                 <input autoFocus value={inputVal} onChange={e => setInputVal(e.target.value)}
-                  onKeyDown={e => { if (e.key === "Enter" && inputVal.trim()) { const app = inputVal.trim(); setSubApp(app); addJourney("Aplicativo", app); setInputVal(""); botDelay(`Entendido — conta no **${app}**. O que exatamente aconteceu?`, 800, () => setShowUI("other_app_issue")); }}}
+                  onKeyDown={e => { if (e.key === "Enter" && inputVal.trim()) onOtherAppName(); }}
                   placeholder="Ex: Pinterest, LinkedIn, Kwai..."
                   style={{ flex: 1, padding: "10px 14px", border: "2px solid #e8e0d0", borderRadius: "10px", fontSize: "13px", fontFamily: "inherit", outline: "none", color: "#15253f" }}
                   onFocus={e => e.target.style.borderColor = "#b79f6f"}
                   onBlur={e => e.target.style.borderColor = "#e8e0d0"}
                 />
-                <button onClick={() => { if (!inputVal.trim()) return; const app = inputVal.trim(); setSubApp(app); addJourney("Aplicativo", app); setInputVal(""); botDelay(`Entendido — conta no **${app}**. O que exatamente aconteceu?`, 800, () => setShowUI("other_app_issue")); }} style={{ padding: "10px 16px", background: "linear-gradient(135deg, #b79f6f, #e8c97a)", border: "none", borderRadius: "10px", cursor: "pointer", fontSize: "15px", color: "#15253f", fontWeight: "700" }}>→</button>
+                <button onClick={() => onOtherAppName()} style={{ padding: "10px 16px", background: "linear-gradient(135deg, #b79f6f, #e8c97a)", border: "none", borderRadius: "10px", cursor: "pointer", fontSize: "15px", color: "#15253f", fontWeight: "700" }}>→</button>
               </div>
             </div>
           )}
