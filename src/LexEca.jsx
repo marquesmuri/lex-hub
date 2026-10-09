@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   WHATSAPP_NUMBER, AZUL, AZUL_CLARO, DOURADO, AREIA,
-  OptBtn, PrimaryBtn, GhostBtn, BotBubble, UserBubble, TypingRow, ChatShell, colStack,
+  OptBtn, PrimaryBtn, GhostBtn, BotBubble, UserBubble, TypingRow, ChatShell, colStack, scrollChatTo,
 } from "./brand";
 
 /**
@@ -28,7 +28,7 @@ export default function LexEca({ onGoToRecovery }) {
   const endRef = useRef(null);
 
   useEffect(() => {
-    if (endRef.current) endRef.current.scrollIntoView({ behavior: "smooth" });
+    scrollChatTo(endRef.current);
   }, [messages, isTyping, showUI]);
 
   // Intro ao montar

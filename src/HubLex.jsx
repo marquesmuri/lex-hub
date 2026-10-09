@@ -3,7 +3,7 @@ import LexChatbot from "./LexChatbot";
 import LexEca from "./LexEca";
 import {
   WHATSAPP_NUMBER, DOURADO, AREIA, SERIF,
-  OptBtn, PrimaryBtn, BotBubble, UserBubble, TypingRow, ChatShell, colStack,
+  OptBtn, PrimaryBtn, BotBubble, UserBubble, TypingRow, ChatShell, colStack, scrollChatTo,
 } from "./brand";
 
 // ─── Taxas médias do BACEN por modalidade (% ao mês, ref. 2025–2026) ───
@@ -171,7 +171,7 @@ export default function HubLex() {
   };
 
   useEffect(() => {
-    if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    scrollChatTo(bottomRef.current);
   }, [messages, showUI, isTyping]);
 
   // ─── Init ───

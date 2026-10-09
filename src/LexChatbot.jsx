@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   WHATSAPP_NUMBER, META_VERIFIED_BADGE, fmt,
-  OptBtn, GhostBtn, BotBubble, UserBubble, TypingRow, ChatShell,
+  OptBtn, GhostBtn, BotBubble, UserBubble, TypingRow, ChatShell, scrollChatTo,
 } from "./brand";
 import {
   MOB_STEPS, MOB_GUIDE, MOB_DAMAGE_OPTIONS, detectMobilityApp, getMobStep,
@@ -472,9 +472,9 @@ export default function LexChatbot() {
 
   useEffect(() => {
     if (isGuideUI(showUI)) {
-      setTimeout(() => { guideRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
+      setTimeout(() => { scrollChatTo(guideRef.current, "start"); }, 80);
     } else {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      scrollChatTo(bottomRef.current);
     }
   }, [messages, showUI, isTyping]);
 

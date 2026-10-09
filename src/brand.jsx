@@ -6,6 +6,18 @@ import { useState } from "react";
 export const WHATSAPP_NUMBER = "5513991791053";
 // =============================================
 
+// Rola só a caixa de mensagens até o elemento. scrollIntoView também rolaria
+// a página de fora quando o Lex está incorporado em um iframe (site do escritório).
+export function scrollChatTo(el, block = "end") {
+  if (!el) return;
+  let box = el.parentElement;
+  while (box && !/(auto|scroll)/.test(getComputedStyle(box).overflowY)) box = box.parentElement;
+  if (!box) return;
+  const offset = el.getBoundingClientRect().top - box.getBoundingClientRect().top;
+  const top = block === "start" ? box.scrollTop + offset : box.scrollHeight;
+  box.scrollTo({ top, behavior: "smooth" });
+}
+
 // ═══════════════════════════════════════════════════════════
 // IDENTIDADE VISUAL ÚNICA — Lex · Marques & Cunha
 // Todos os fluxos (Hub e recuperação de conta) usam este módulo.
