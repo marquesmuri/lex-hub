@@ -6,6 +6,16 @@ import { useState } from "react";
 export const WHATSAPP_NUMBER = "5513991791053";
 // =============================================
 
+// Abre o WhatsApp com o resumo do caso. Quando o Lex está incorporado no site do
+// escritório, avisa a página de fora (só o nome do fluxo, nenhum dado do caso) para
+// que ela registre a conversão do Google Ads no domínio que recebeu o clique do anúncio.
+export function openWhatsApp(url, fluxo) {
+  if (window.parent !== window) {
+    window.parent.postMessage({ source: "lex", type: "lex:whatsapp", fluxo }, "*");
+  }
+  window.open(url, "_blank");
+}
+
 // Rola só a caixa de mensagens até o elemento. scrollIntoView também rolaria
 // a página de fora quando o Lex está incorporado em um iframe (site do escritório).
 export function scrollChatTo(el, block = "end") {

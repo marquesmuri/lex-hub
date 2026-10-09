@@ -3,7 +3,7 @@ import LexChatbot from "./LexChatbot";
 import LexEca from "./LexEca";
 import {
   WHATSAPP_NUMBER, DOURADO, AREIA, SERIF,
-  OptBtn, PrimaryBtn, BotBubble, UserBubble, TypingRow, ChatShell, colStack, scrollChatTo,
+  OptBtn, PrimaryBtn, BotBubble, UserBubble, TypingRow, ChatShell, colStack, scrollChatTo, openWhatsApp as abrirWhatsApp,
 } from "./brand";
 
 // ─── Taxas médias do BACEN por modalidade (% ao mês, ref. 2025–2026) ───
@@ -223,7 +223,7 @@ export default function HubLex() {
   };
 
   const openWhatsApp = () => {
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${buildWAMessage()}`, "_blank");
+    abrirWhatsApp(`https://wa.me/${WHATSAPP_NUMBER}?text=${buildWAMessage()}`, vertical || "hub");
   };
 
 

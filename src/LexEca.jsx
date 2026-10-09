@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   WHATSAPP_NUMBER, AZUL, AZUL_CLARO, DOURADO, AREIA,
-  OptBtn, PrimaryBtn, GhostBtn, BotBubble, UserBubble, TypingRow, ChatShell, colStack, scrollChatTo,
+  OptBtn, PrimaryBtn, GhostBtn, BotBubble, UserBubble, TypingRow, ChatShell, colStack, scrollChatTo, openWhatsApp,
 } from "./brand";
 
 /**
@@ -122,7 +122,7 @@ export default function LexEca({ onGoToRecovery }) {
     }
     return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(corpo)}`;
   };
-  const openWA = (ramo) => window.open(buildWA(ramo), "_blank");
+  const openWA = (ramo) => openWhatsApp(buildWA(ramo), "eca");
 
   const reiniciar = () => {
     answers.current = {};

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   WHATSAPP_NUMBER, META_VERIFIED_BADGE, fmt,
-  OptBtn, GhostBtn, BotBubble, UserBubble, TypingRow, ChatShell, scrollChatTo,
+  OptBtn, GhostBtn, BotBubble, UserBubble, TypingRow, ChatShell, scrollChatTo, openWhatsApp as abrirWhatsApp,
 } from "./brand";
 import {
   MOB_STEPS, MOB_GUIDE, MOB_DAMAGE_OPTIONS, detectMobilityApp, getMobStep,
@@ -585,7 +585,7 @@ export default function LexChatbot() {
     }
 
     
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
+    abrirWhatsApp(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "conta");
   };
 
   // ─── Escalada para coleta de dados ───
